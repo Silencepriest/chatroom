@@ -1,9 +1,17 @@
 import { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { validateUser } from '../redux/reducers/auth'
 
 const Startup = (props) => {
-  useEffect(() => {}, [])
-
+  const dispatch = useDispatch()
+  const token = useSelector((s) => s.auth.token)
+  useEffect(() => {
+    if (!token) {
+      dispatch(validateUser())
+    }
+  }, [dispatch])
   return props.children
 }
 

@@ -4,11 +4,16 @@ import cors from 'cors'
 import bodyParser from 'body-parser'
 import sockjs from 'sockjs'
 import { renderToStaticNodeStream } from 'react-dom/server'
+import jwt from 'jsonwebtoken'
 import React from 'react'
-
+import passport from 'passport'
 import cookieParser from 'cookie-parser'
+
+import mongooseService from './services/mongoose'
 import config from './config'
 import Html from '../client/html'
+import User from './model/User.model'
+import jwtStrategy from './services/passport'
 
 const Root = () => ''
 
@@ -32,6 +37,7 @@ const port = process.env.PORT || 8090
 const server = express()
 
 const middleware = [
+  passport.initialize(),
   cors(),
   express.static(path.resolve(__dirname, '../dist/assets')),
   bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }),
@@ -39,7 +45,55 @@ const middleware = [
   cookieParser()
 ]
 
+mongooseService.connect()
+passport.use('jwt', jwtStrategy)
+
 middleware.forEach((it) => server.use(it))
+
+const getUser = async (data) => {
+  const user = await User.findAndValidateUser(data)
+  const payload = { uid: user.id }
+  const token = jwt.sign(payload, config.secret, { expiresIn: '48h' })
+  return { token, user }
+}
+
+server.get('/api/v1/auth', async (req, res) => {
+  try {
+    const jwtUser = jwt.verify(req.cookies.token, config.secret)
+    const user = await User.findById(jwtUser.uid)
+    const payload = { uid: user.id }
+    const token = jwt.sign(payload, config.secret, { expiresIn: '48h' })
+    res.cookie('token', token, { maxAge: 1000 * 60 * 60 * 48 })
+    res.json({ status: 'ok', token, user })
+  } catch (err) {
+    console.log(err)
+    res.json({ status: 'error', message: `auth error ${err}` })
+  }
+})
+
+server.post('/api/v1/reg', async (req, res) => {
+  const { username, password } = req.body
+  try {
+    const newUser = new User({ username, password })
+    await newUser.save()
+    const { user, token } = await getUser(req.body)
+    res.cookie('token', token, { maxAge: 1000 * 60 * 60 * 48 })
+    res.json({ status: 'ok', token, user })
+  } catch (e) {
+    res.json({ status: 'error', message: `${e}` })
+  }
+})
+
+server.post('/api/v1/auth', async (req, res) => {
+  try {
+    const { user, token } = await getUser(req.body)
+    res.cookie('token', token, { maxAge: 1000 * 60 * 60 * 48 })
+    res.json({ status: 'ok', token, user })
+  } catch (err) {
+    console.log(err)
+    res.json({ status: 'error', message: `auth error ${err}` })
+  }
+})
 
 server.use('/api/', (req, res) => {
   res.status(404)

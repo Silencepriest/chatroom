@@ -1,10 +1,16 @@
+import Cookies from 'universal-cookie'
+
 const SET_USERNAME = 'SET_USERNAME'
 const SET_PASSWORD = 'SET_PASSWORD'
 const SET_LOGIN = 'SET_LOGIN'
 
+const cookies = new Cookies()
+
 const initValues = {
   username: '',
-  password: ''
+  password: '',
+  token: cookies.get('token'),
+  user: {}
 }
 
 export function setUsername(username) {

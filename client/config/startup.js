@@ -8,7 +8,7 @@ const Startup = (props) => {
   const dispatch = useDispatch()
   const token = useSelector((s) => s.auth.token)
   useEffect(() => {
-    if (!token) {
+    if (token) {
       dispatch(validateUser())
     }
   }, [dispatch])

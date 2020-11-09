@@ -4,7 +4,6 @@ import http from 'http'
 import path from 'path'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import sockjs from 'sockjs'
 import { renderToStaticNodeStream } from 'react-dom/server'
 import jwt from 'jsonwebtoken'
 import React from 'react'
@@ -132,7 +131,7 @@ server.get('/*', (req, res) => {
   )
 })
 
-serverHttp.listen(port)
+serverHttp.listen(port, () => console.log(`Server Running`))
 /*
 if (config.isSocketsEnabled) {
   const echo = sockjs.createServer()
@@ -146,8 +145,13 @@ if (config.isSocketsEnabled) {
   })
   echo.installHandlers(app, { prefix: '/ws' })
 } */
-io.on('connection', () => {
+io.on('connection', (socket) => {
+  socket.emit('message', 'You have successfully joined the chat')
   console.log('a user connected')
+  socket.on('chat message', (msg) => {
+    console.log('message: ' + msg)
+    socket.emit('answer', 'message received')
+  })
 })
 
 console.log(`Serving at http://localhost:${port}`)

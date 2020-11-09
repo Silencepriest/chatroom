@@ -1,4 +1,6 @@
 import express from 'express'
+import socketIO from 'socket.io'
+import http from 'http'
 import path from 'path'
 import cors from 'cors'
 import bodyParser from 'body-parser'
@@ -31,10 +33,12 @@ try {
   console.log(' run yarn build:prod to enable ssr')
 }
 
-let connections = []
+// let connections = []
 
 const port = process.env.PORT || 8090
 const server = express()
+const serverHttp = http.createServer(server)
+const io = socketIO(serverHttp)
 
 const middleware = [
   passport.initialize(),
@@ -128,8 +132,8 @@ server.get('/*', (req, res) => {
   )
 })
 
-const app = server.listen(port)
-
+serverHttp.listen(port)
+/*
 if (config.isSocketsEnabled) {
   const echo = sockjs.createServer()
   echo.on('connection', (conn) => {
@@ -141,5 +145,9 @@ if (config.isSocketsEnabled) {
     })
   })
   echo.installHandlers(app, { prefix: '/ws' })
-}
+} */
+io.on('connection', () => {
+  console.log('a user connected')
+})
+
 console.log(`Serving at http://localhost:${port}`)

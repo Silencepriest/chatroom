@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Message() {
+function Message(props) {
   return (
     <div className="flex items-start mb-4">
       <img
@@ -10,10 +10,10 @@ function Message() {
       />
       <div className="flex flex-col">
         <div className="flex items-end">
-          <span className="font-bold text-md mr-2 font-sans">killgt</span>
-          <span className="text-grey-200 text-xs font-light">11:46</span>
+          <span className="font-bold text-md mr-2 font-sans">{props.user}</span>
+          <span className="text-grey-200 text-xs font-light">{props.data[2]}</span>
         </div>
-        <p className="font-light text-md text-grey-darkest pt-1">The slack from the other side.</p>
+        <p className="font-light text-md text-grey-darkest pt-1">{props.data[0]}</p>
       </div>
     </div>
   )

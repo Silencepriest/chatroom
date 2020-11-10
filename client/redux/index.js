@@ -4,6 +4,7 @@ import thunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import io from 'socket.io-client'
 
+import { addReceivedMessage } from './reducers/message'
 import rootReducer from './reducers'
 import createHistory from './history'
 
@@ -19,7 +20,16 @@ const composedEnhancers = composeFunc(applyMiddleware(...middleware), ...enhance
 
 const store = createStore(rootReducer(history), initialState, composedEnhancers)
 
-export const socket = io('http://localhost:8090', { transports: ['websocket'] })
-socket.on('answer', (msg) => console.log(msg))
+export const socket = io('http://localhost:8090', { transports: ['websocket'], autoConnect: false })
+socket.on('connect', () => {
+  const { token } = store.getState().auth
+  socket.emit('auth', token.token)
+})
+socket.on('disconnect', (reason) => {
+  if (reason === 'io server disconnect') {
+    socket.connect()
+  }
+})
+socket.on('incoming message', (msg) => store.dispatch(addReceivedMessage(msg)))
 
 export default store

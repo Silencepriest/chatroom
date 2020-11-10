@@ -132,25 +132,26 @@ server.get('/*', (req, res) => {
 })
 
 serverHttp.listen(port, () => console.log(`Server Running`))
-/*
-if (config.isSocketsEnabled) {
-  const echo = sockjs.createServer()
-  echo.on('connection', (conn) => {
-    connections.push(conn)
-    conn.on('data', async () => {})
 
-    conn.on('close', () => {
-      connections = connections.filter((c) => c.readyState !== 3)
-    })
-  })
-  echo.installHandlers(app, { prefix: '/ws' })
-} */
+let userList = {}
+
 io.on('connection', (socket) => {
   socket.emit('message', 'You have successfully joined the chat')
   console.log('a user connected')
   socket.on('chat message', (msg) => {
-    console.log('message: ' + msg)
-    socket.emit('answer', 'message received')
+    // io.findById()
+    io.emit('incoming message', { [userList[socket.id]]: [...msg, +new Date()] })
+  })
+
+  socket.on('auth', async (msg) => {
+    try {
+      const jwtUser = jwt.verify(msg, config.secret)
+      const user = await User.findById(jwtUser.uid)
+      userList = { ...userList, [socket.id]: user.username }
+    } catch (e) {
+      console.log(`auth error ${e}`)
+      socket.emit('error', 'auth failed')
+    }
   })
 })
 

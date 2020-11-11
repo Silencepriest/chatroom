@@ -1,6 +1,7 @@
 import React from 'react'
 
 function Message(props) {
+  const messageTime = new Date(+props.data[2])
   return (
     <div className="flex items-start mb-4">
       <img
@@ -10,8 +11,8 @@ function Message(props) {
       />
       <div className="flex flex-col">
         <div className="flex items-end">
-          <span className="font-bold text-md mr-2 font-sans">{props.user}</span>
-          <span className="text-grey-200 text-xs font-light">{props.data[2]}</span>
+          <span className="font-bold text-md mr-2 font-sans">{props.data[1]}</span>
+          <span className="text-grey-200 text-xs font-light">{messageTime.toString()}</span>
         </div>
         <p className="font-light text-md text-grey-darkest pt-1">{props.data[0]}</p>
       </div>

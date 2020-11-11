@@ -9,10 +9,7 @@ function MessageWindow() {
   return (
     <div className="px-6 py-4 flex-1 overflow-scroll-x">
       {receivedMessages.map((message) => {
-        console.log(Object.values(message)[0])
-        return (
-          <Message key={uuid()} user={Object.keys(message)[0]} data={Object.values(message)[0]} />
-        )
+        return <Message key={uuid()} data={message} />
       })}
     </div>
   )

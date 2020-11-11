@@ -6,13 +6,13 @@ import { setPendingMessage } from '../../redux/reducers/message'
 
 function MessageInput() {
   const dispatch = useDispatch()
-  const { pendingMessage } = useSelector((store) => store.message)
+  const { pendingMessage, currentChannel } = useSelector((store) => store.message)
   return (
     <div className="flex m-6 rounded-lg border-2 border-grey overflow-hidden">
       <button
         type="button"
         onClick={() => {
-          socket.emit('chat message', [pendingMessage, 'general'])
+          socket.emit('chat message', [currentChannel, pendingMessage])
           dispatch(setPendingMessage(''))
         }}
         className="text-3xl text-grey px-3 border-r-2 border-grey"

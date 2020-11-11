@@ -1,6 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 function LeftBar() {
+  const { username } = useSelector((db) => db.auth.user)
+  const { currentChannel } = useSelector((db) => db.message)
   return (
     <div className="bg-purple-400 text-purple-lighter w-1/5 pb-6 hidden md:block">
       <h1 className="text-white text-xl mb-2 mt-3 px-4 font-sans flex justify-between">
@@ -13,34 +17,18 @@ function LeftBar() {
       </h1>
       <div className="flex items-center mb-6 px-4">
         <span className="bg-green rounded-full block w-2 h-2 mr-2" />
-        <span className="text-purple-lightest">Olivia</span>
+        <span className="text-purple-lightest">{username}</span>
       </div>
 
       <div className="px-4 mb-2 font-sans">Channels</div>
-      <div className="bg-teal-700 mb-6 py-1 px-4 text-white font-semi-bold ">
-        <span className="pr-1 text-grey-light">#</span> general
+      <div className="mb-6 py-1 px-4 text-white font-semi-bold ">
+        <span className="pr-1 text-grey-light">#</span> {currentChannel}
       </div>
-
-      <div className="px-4 mb-3 font-sans">Direct Messages</div>
-
-      <div className="flex items-center mb-3 px-4">
-        <span className="bg-green rounded-full block w-2 h-2 mr-2" />
-        <span className="text-purple-100">
-          Olivia Dunham <i className="text-grey text-sm">(me)</i>
-        </span>
+      <div className="bg-teal-700">
+        <Link className="text-center mx-auto block py-2" to="/channel">
+          Switch Channel
+        </Link>
       </div>
-
-      <div className="flex items-center mb-3 px-4">
-        <span className="bg-green-300 rounded-full block w-2 h-2 mr-2" />
-        <span className="text-purple-100">Adam Bishop</span>
-      </div>
-
-      <div className="flex items-center px-4 mb-6">
-        <span className="border rounded-full block w-2 h-2 mr-2" />
-        <span className="text-purple-lightest">killgt</span>
-      </div>
-
-      <div className="px-4 mb-3 font-sans">Applications</div>
     </div>
   )
 }

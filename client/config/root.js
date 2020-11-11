@@ -11,6 +11,7 @@ import DummyView from '../components/dummy-view'
 import NotFound from '../components/404'
 import Chat from '../components/chat'
 import Login from '../components/login'
+import Channel from '../components/channel'
 
 import Startup from './startup'
 
@@ -79,6 +80,7 @@ const RootComponent = (props) => {
             <OnlyAnonymousRoute exact path="/login" component={() => <Login />} />
             <OnlyAnonymousRoute exact path="/register" component={() => <Login />} />
             <PrivateRoute exact path="/hidden-route" component={() => <DummyView />} />
+            <PrivateRoute exact path="/channel" component={() => <Channel />} />
             <Route component={() => <NotFound />} />
           </Switch>
         </Startup>

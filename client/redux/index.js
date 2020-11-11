@@ -32,4 +32,11 @@ socket.on('disconnect', (reason) => {
 })
 socket.on('incoming message', (msg) => store.dispatch(addReceivedMessage(msg)))
 
+socket.on('get all messages', (msg) => {
+  console.log(msg)
+  msg.forEach((message) => {
+    store.dispatch(addReceivedMessage(message))
+  })
+})
+
 export default store

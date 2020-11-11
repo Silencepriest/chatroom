@@ -14,6 +14,7 @@ import mongooseService from './services/mongoose'
 import config from './config'
 import Html from '../client/html'
 import User from './model/User.model'
+import MessageStore from './model/Messages.model'
 import jwtStrategy from './services/passport'
 
 const Root = () => ''
@@ -137,10 +138,36 @@ let userList = {}
 
 io.on('connection', (socket) => {
   socket.emit('message', 'You have successfully joined the chat')
-  console.log('a user connected')
+  console.log(`${socket.id} connected`)
+
   socket.on('chat message', (msg) => {
-    // io.findById()
-    io.emit('incoming message', { [userList[socket.id]]: [...msg, +new Date()] })
+    const date = +new Date()
+    io.to(msg[0]).emit('incoming message', [msg[1], userList[socket.id], date])
+    MessageStore({
+      channel: msg[0],
+      message: msg[1],
+      user: userList[socket.id],
+      date
+    }).save()
+  })
+
+  socket.on('get all messages', async (channel) => {
+    const messageList = await MessageStore.find({ channel }).exec()
+    const modifiedMessageList = messageList.map((message) => {
+      return [message.message, message.user, message.date]
+    })
+    socket.emit('get all messages', modifiedMessageList)
+  })
+
+  socket.on('disconnect user', () => {
+    console.log(`${socket.id} kicked`)
+    io.sockets.sockets.get(socket.id).emit('kick')
+    io.sockets.sockets.get(socket.id).disconnect()
+  })
+
+  socket.on('disconnect', () => {
+    console.log(`${socket.id} disconnected`)
+    delete userList[socket.id]
   })
 
   socket.on('auth', async (msg) => {
@@ -149,9 +176,14 @@ io.on('connection', (socket) => {
       const user = await User.findById(jwtUser.uid)
       userList = { ...userList, [socket.id]: user.username }
     } catch (e) {
-      console.log(`auth error ${e}`)
+      console.log(`${socket.id} auth error ${e}`)
       socket.emit('error', 'auth failed')
     }
+  })
+
+  socket.on('channel', (msg) => {
+    console.log(`${socket.id} joined ${msg}`)
+    socket.join(msg)
   })
 })
 

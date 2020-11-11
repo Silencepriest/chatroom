@@ -4,7 +4,8 @@ import thunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import io from 'socket.io-client'
 
-import { addReceivedMessage } from './reducers/message'
+import { addReceivedMessage, setConnections } from './reducers/message'
+import { removeAuth } from './reducers/auth'
 import rootReducer from './reducers'
 import createHistory from './history'
 
@@ -33,10 +34,17 @@ socket.on('disconnect', (reason) => {
 socket.on('incoming message', (msg) => store.dispatch(addReceivedMessage(msg)))
 
 socket.on('get all messages', (msg) => {
-  console.log(msg)
   msg.forEach((message) => {
     store.dispatch(addReceivedMessage(message))
   })
+})
+
+socket.on('get connections', (userList) => {
+  store.dispatch(setConnections(userList))
+})
+
+socket.on('kick', () => {
+  store.dispatch(removeAuth())
 })
 
 export default store

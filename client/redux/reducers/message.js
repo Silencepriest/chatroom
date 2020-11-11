@@ -2,13 +2,22 @@ const initValues = {
   pendingMessage: '',
   currentChannel: 'general',
   newChannel: '',
-  receivedMessages: []
+  receivedMessages: [],
+  connections: {}
 }
 
 const SET_PENDING_MESSAGE = 'SET_PENDING_MESSAGE'
 const SET_RECEIVED_MESSAGE = 'SET_RECEIVED_MESSAGE'
 const SET_CURRENT_CHANNEL = 'SET_CURRENT_CHANNEL'
 const SET_CURRENT_CHANNEL_NAME = 'SET_CURRENT_CHANNEL_NAME'
+const SET_CONNECTIONS = 'SET_CONNECTIONS'
+
+export function setConnections(connections) {
+  return {
+    type: SET_CONNECTIONS,
+    payload: connections
+  }
+}
 
 export function setPendingMessage(message) {
   return {
@@ -40,6 +49,11 @@ export function setNewChannel() {
 
 function Message(store = initValues, action) {
   switch (action.type) {
+    case SET_CONNECTIONS:
+      return {
+        ...store,
+        connections: action.payload
+      }
     case SET_CURRENT_CHANNEL_NAME:
       return {
         ...store,

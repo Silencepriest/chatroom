@@ -9,7 +9,7 @@ const cookies = new Cookies()
 const initValues = {
   username: '',
   password: '',
-  token: cookies.get('token'),
+  token: { token: cookies.get('token') },
   user: {}
 }
 
@@ -44,6 +44,12 @@ export function addUser(isReg) {
   }
 }
 
+export function removeAuth() {
+  return (dispatch) => {
+    cookies.remove('token')
+    dispatch({ type: SET_LOGIN, token: {}, user: {} })
+  }
+}
 
 export function validateUser() {
   return (dispatch) => {

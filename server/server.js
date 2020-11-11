@@ -134,6 +134,12 @@ server.get('/*', (req, res) => {
 
 serverHttp.listen(port, () => console.log(`Server Running`))
 
+async function verifyJwt(jwttoken) {
+  const jwtUser = jwt.verify(jwttoken, config.secret)
+  const user = await User.findById(jwtUser.uid)
+  return user
+}
+
 let userList = {}
 
 io.on('connection', (socket) => {
@@ -159,10 +165,18 @@ io.on('connection', (socket) => {
     socket.emit('get all messages', modifiedMessageList)
   })
 
-  socket.on('disconnect user', () => {
-    console.log(`${socket.id} kicked`)
-    io.sockets.sockets.get(socket.id).emit('kick')
-    io.sockets.sockets.get(socket.id).disconnect()
+  socket.on('disconnect user', async ({ jwttoken, socketId }) => {
+    try {
+      console.log(jwttoken)
+      const user = await verifyJwt(jwttoken)
+      if (!user.role.find((role) => role === 'admin')) socket.emit('error', 'auth failed')
+      console.log(`${socket.id} kicked`)
+      io.sockets.sockets.get(socketId).emit('kick')
+      io.sockets.sockets.get(socketId).disconnect('kicked')
+    } catch (e) {
+      console.log(e)
+      socket.emit('error', 'auth failed')
+    }
   })
 
   socket.on('disconnect', () => {
@@ -172,11 +186,24 @@ io.on('connection', (socket) => {
 
   socket.on('auth', async (msg) => {
     try {
-      const jwtUser = jwt.verify(msg, config.secret)
-      const user = await User.findById(jwtUser.uid)
+      const user = await verifyJwt(msg)
       userList = { ...userList, [socket.id]: user.username }
     } catch (e) {
       console.log(`${socket.id} auth error ${e}`)
+      socket.emit('error', 'auth failed')
+    }
+  })
+
+  socket.on('get connections', async (jwttoken) => {
+    try {
+      const user = await verifyJwt(jwttoken)
+      if (!user.role.find((role) => role === 'admin')) {
+        socket.emit('error', 'auth failed')
+        return
+      }
+      console.log(userList)
+      socket.emit('get connections', userList)
+    } catch (e) {
       socket.emit('error', 'auth failed')
     }
   })
